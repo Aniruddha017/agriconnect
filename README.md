@@ -223,5 +223,5 @@ If you use this, the frontend can request `/api/...` rather than `http://localho
 ---
 
 ## Contact / Notes
-- Contact me at my email if you face any issuesm or you can fix some bugs here(cause there are some:)
+- Contact me at my email if you face any issues or if you can fix some bugs here(cause there are some:)
 ---
