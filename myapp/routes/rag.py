@@ -51,7 +51,7 @@ def get_answer(query_text: str) -> str:
 
     # Step 4: Build prompt
     prompt = (
-        f"Answer the following question based on the context:\n\n"
+        f"Answer the following question based on the context within 100 to 200 words and do not tell me your reasoning.\n\n"
         f"Context:\n{context}\n\n"
         f"Question:\n{query_text}"
     )
