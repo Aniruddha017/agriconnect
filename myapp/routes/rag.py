@@ -5,6 +5,7 @@ from sentence_transformers import SentenceTransformer
 from chromadb import PersistentClient
 import requests
 import json
+from collections import OrderedDict
 
 router = APIRouter()
 
@@ -34,6 +35,23 @@ def retrieve_context(query: str, top_k: int = TOP_K) -> tuple[str, float]:
     distances = results["distances"][0]  # distances for first query
     return "\n\n".join(chunks), max(distances)
 
+
+# -------- Simple in-memory LRU cache for retrieved contexts ----------
+# This caches (context, max_similarity) per exact query string so retrieval
+# is only performed once for the same query. Adjust MAX_CACHE_SIZE as needed.
+CONTEXT_CACHE = OrderedDict()
+MAX_CACHE_SIZE = 200
+
+
+def cache_context(query: str, context_tuple: tuple[str, float]):
+    # Move-to-end to mark as most-recently-used
+    if query in CONTEXT_CACHE:
+        CONTEXT_CACHE.move_to_end(query)
+    CONTEXT_CACHE[query] = context_tuple
+    if len(CONTEXT_CACHE) > MAX_CACHE_SIZE:
+        CONTEXT_CACHE.popitem(last=False)
+
+
 # -------- RAG Core Function (non-streaming fallback) ----------
 def get_answer(query_text: str) -> str:
     query_text = query_text.strip()
@@ -42,8 +60,12 @@ def get_answer(query_text: str) -> str:
     if query_text.lower() in PURE_GREETINGS:
         return "Hello! How can I help you today?"
 
-    # Step 2: Retrieve context
-    context, max_similarity = retrieve_context(query_text, top_k=TOP_K)
+    # Step 2: Retrieve context (cached)
+    if query_text in CONTEXT_CACHE:
+        context, max_similarity = CONTEXT_CACHE[query_text]
+    else:
+        context, max_similarity = retrieve_context(query_text, top_k=TOP_K)
+        cache_context(query_text, (context, max_similarity))
 
     # Step 3: Check similarity threshold
     if max_similarity < SIMILARITY_THRESHOLD:
@@ -61,7 +83,7 @@ def get_answer(query_text: str) -> str:
         response = requests.post(
             "http://localhost:11434/api/generate",
             json={
-                "model": "qwen3:4b",
+                "model": "mistral:7b",
                 "prompt": prompt,
                 "stream": False
             }
@@ -80,8 +102,12 @@ def rag_query_stream(request: QueryRequest):
     if query_text.lower() in PURE_GREETINGS:
         return StreamingResponse(iter([f"Hello! How can I help you today?"]), media_type="text/plain")
 
-    # Step 2: Retrieve context
-    context, max_similarity = retrieve_context(query_text, top_k=TOP_K)
+    # Step 2: Retrieve context (cached)
+    if query_text in CONTEXT_CACHE:
+        context, max_similarity = CONTEXT_CACHE[query_text]
+    else:
+        context, max_similarity = retrieve_context(query_text, top_k=TOP_K)
+        cache_context(query_text, (context, max_similarity))
 
     # Step 3: Similarity check
     if max_similarity < SIMILARITY_THRESHOLD:
@@ -100,7 +126,7 @@ def rag_query_stream(request: QueryRequest):
         response = requests.post(
             "http://localhost:11434/api/generate",
             json={
-                "model": "qwen3:4b",
+                "model": "mistral:7b",
                 "prompt": prompt,
                 "stream": True
             },

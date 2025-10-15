@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Cloud, Droplets, Wind, ThermometerSun, Sprout, TrendingUp, MessageSquare, Users, BarChart3, Sun, Moon, Menu, X, CheckCircle, AlertCircle } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 const apiKey = "694acb9098ddf20e13e0eae5af2a5cc9";
@@ -113,6 +113,308 @@ const WeatherPage = ({ city, setCity, weather, fetchWeather, weatherLoading, t, 
   </div>
 );
 
+const ChatPage = ({ messages, userInput, setUserInput, sendChatMessage, t, darkMode }) => {
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Auto-scroll to bottom when messages change
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Focus the input when component mounts
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
+  const handleInputChange = (e) => {
+    setUserInput(e.target.value);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      sendChatMessage();
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <h1 className="text-4xl font-bold mb-8 flex items-center gap-3">
+        <MessageSquare className="text-purple-600" />
+        {t.communityChatbot}
+      </h1>
+      
+      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-2xl shadow-lg`}>
+        <div 
+          className="h-96 overflow-y-auto mb-4 space-y-4 pr-2"
+          style={{ scrollBehavior: 'smooth' }}
+        >
+          {messages.map((msg, idx) => (
+            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-xs md:max-w-md p-4 rounded-2xl ${
+                msg.role === 'user' 
+                  ? 'bg-green-600 text-white rounded-br-none' 
+                  : darkMode ? 'bg-gray-700 rounded-bl-none' : 'bg-gray-100 rounded-bl-none'
+              }`}>
+                <p>{msg.text}</p>
+              </div>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+        
+        <div className="flex gap-3">
+          <input 
+            ref={inputRef}
+            type="text"
+            placeholder={t.typeMessage}
+            className={`flex-1 p-3 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600' : 'border-gray-300'}`}
+            value={userInput}
+            onChange={handleInputChange}
+            onKeyPress={handleKeyPress}
+          />
+          <button 
+            onClick={sendChatMessage}
+            className="bg-green-600 text-black px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all"
+          >
+            {t.sendMessage}
+          </button>
+        </div>
+        
+        <div className={`mt-6 p-4 ${darkMode ? 'bg-blue-900' : 'bg-blue-50'} rounded-xl`}>
+          <p className="text-sm">
+            <strong>Sample Questions:</strong> "Which crop is best for black soil in Rabi season?" • 
+            "How to control pests in paddy?" • "Best fertilizer for wheat?"
+          </p>
+        </div>
+      </div>
+      
+      <div className="mt-8 grid md:grid-cols-2 gap-6">
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-2xl shadow-lg`}>
+          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <Users className="text-green-600" />
+            Connect with Local Experts
+          </h3>
+          <div className="space-y-3">
+            <div className={`${darkMode ? 'bg-gray-700' : 'bg-green-50'} p-4 rounded-lg`}>
+              <p className="font-semibold">Dr. Amit Patel</p>
+              <p className="text-sm opacity-70">Soil Science Expert</p>
+              <p className="text-sm text-green-600">Available Now</p>
+            </div>
+            <div className={`${darkMode ? 'bg-gray-700' : 'bg-green-50'} p-4 rounded-lg`}>
+              <p className="font-semibold">Sunita Verma</p>
+              <p className="text-sm opacity-70">Crop Management Specialist</p>
+              <p className="text-sm text-green-600">Available Now</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-2xl shadow-lg`}>
+          <h3 className="text-xl font-bold mb-4">Agricultural Helplines</h3>
+          <div className="space-y-3">
+            <div className={`${darkMode ? 'bg-gray-700' : 'bg-blue-50'} p-4 rounded-lg`}>
+              <p className="font-semibold">Kisan Call Centre</p>
+              <p className="text-blue-600">1800-180-1551</p>
+            </div>
+            <div className={`${darkMode ? 'bg-gray-700' : 'bg-blue-50'} p-4 rounded-lg`}>
+              <p className="font-semibold">Agriculture Ministry Helpline</p>
+              <p className="text-blue-600">011-23382012</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ForumPage = () => {
+  const [posts, setPosts] = useState([
+    {
+      id: 1,
+      title: "Best fertilizers for Loamy Soil",
+      content: "What fertilizers work best for loamy soil to maximize yield?",
+      author: "Ravi Sharma",
+      time: "2 hours ago",
+      comments: [
+        { author: "Expert Anil", text: "Use NPK 10:26:26 or compost for better soil structure." },
+        { author: "Suman", text: "Organic manure also helps in loamy soil!" }
+      ],
+      showComments: false
+    },
+    {
+      id: 2,
+      title: "How to deal with pest attack in Kharif season?",
+      content: "Recently my crops are affected by pests, please suggest remedies.",
+      author: "Amit Kumar",
+      time: "5 hours ago",
+      comments: [
+        { author: "Expert Renu", text: "Spray neem-based organic pesticide every 7 days." }
+      ],
+      showComments: false
+    },
+    {
+      id: 3,
+      title: "Drip irrigation setup guide for beginners",
+      content: "I want to set up drip irrigation for 2 acres of land. Any guidance?",
+      author: "Priya Verma",
+      time: "1 day ago",
+      comments: [],
+      showComments: false
+    }
+  ]);
+
+  const [newPost, setNewPost] = useState({ title: '', content: '', author: '' });
+
+  const addPost = (e) => {
+    e.preventDefault();
+    if (!newPost.title || !newPost.content || !newPost.author) return;
+    const post = {
+      id: Date.now(),
+      ...newPost,
+      time: "Just now",
+      comments: [],
+      showComments: false
+    };
+    setPosts([post, ...posts]);
+    setNewPost({ title: '', content: '', author: '' });
+  };
+
+  const toggleComments = (id) => {
+    setPosts(posts.map(p => p.id === id ? { ...p, showComments: !p.showComments } : p));
+  };
+
+  const addComment = (postId, author, text) => {
+    if (!author || !text) return;
+    setPosts(posts.map(p =>
+      p.id === postId
+        ? { ...p, comments: [...p.comments, { author, text }] }
+        : p
+    ));
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-8">
+      <h1 className="text-4xl font-bold mb-4 flex items-center gap-3 text-green-600">
+        <MessageSquare className="text-green-600" /> Discussion Forum
+      </h1>
+
+      {/* Create Post Section */}
+      <div className="bg-white p-6 rounded-2xl shadow-lg">
+        <h2 className="text-2xl font-semibold mb-4">Start a New Discussion</h2>
+        <form onSubmit={addPost} className="space-y-4">
+          <input
+            type="text"
+            placeholder="Title"
+            value={newPost.title}
+            onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+            className="w-full p-3 border rounded-lg border-gray-300"
+          />
+          <textarea
+            placeholder="Write your discussion content..."
+            value={newPost.content}
+            onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+            className="w-full p-3 border rounded-lg border-gray-300"
+            rows="3"
+          ></textarea>
+          <input
+            type="text"
+            placeholder="Your Name"
+            value={newPost.author}
+            onChange={(e) => setNewPost({ ...newPost, author: e.target.value })}
+            className="w-full p-3 border rounded-lg border-gray-300"
+          />
+          <button
+            type="submit"
+            className="bg-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all"
+          >
+            Post Discussion
+          </button>
+        </form>
+      </div>
+
+      {/* Posts List */}
+      <div className="space-y-6">
+        {posts.map(post => (
+          <div key={post.id} className="bg-white p-6 rounded-2xl shadow-lg">
+            <h3 className="text-2xl font-bold mb-2 text-green-700">{post.title}</h3>
+            <p className="text-gray-700 mb-3">{post.content}</p>
+            <p className="text-sm text-gray-500 mb-4">
+              Posted by <span className="font-semibold">{post.author}</span> • {post.time}
+            </p>
+
+            <button
+              onClick={() => toggleComments(post.id)}
+              className="text-green-600 font-medium mb-3"
+            >
+              {post.showComments
+                ? `Hide Comments (${post.comments.length})`
+                : `View Comments (${post.comments.length})`}
+            </button>
+
+            {post.showComments && (
+              <div className="mt-4 space-y-4">
+                {post.comments.map((c, i) => (
+                  <div key={i} className="bg-green-50 p-3 rounded-lg">
+                    <p className="text-sm">
+                      <span className="font-semibold">{c.author}:</span> {c.text}
+                    </p>
+                  </div>
+                ))}
+
+                {/* Add Comment */}
+                <AddCommentForm postId={post.id} addComment={addComment} />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ⬇️ Comment Form with "Post Comment" button
+const AddCommentForm = ({ postId, addComment }) => {
+  const [author, setAuthor] = useState('');
+  const [text, setText] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    addComment(postId, author, text);
+    setAuthor('');
+    setText('');
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3 mt-4 bg-green-50 p-4 rounded-xl border border-green-200">
+      <input
+        type="text"
+        placeholder="Your Name"
+        value={author}
+        onChange={(e) => setAuthor(e.target.value)}
+        className="w-full p-2 border rounded-lg border-gray-300"
+      />
+      <textarea
+        placeholder="Write a comment..."
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        className="w-full p-2 border rounded-lg border-gray-300"
+        rows="2"
+      ></textarea>
+      <button
+        type="submit"
+        className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-700 transition-all font-semibold"
+      >
+        Post Comment
+      </button>
+    </form>
+  );
+};
 
 const AgriConnect = () => {
   const [currentPage, setCurrentPage] = useState('home');
@@ -244,54 +546,48 @@ const AgriConnect = () => {
 
   // Fetch weather data
   const fetchWeather = async () => {
-  if (!city) return;
+    if (!city) return;
 
-  setWeatherLoading(true);
+    setWeatherLoading(true);
 
-  try {
-    const response = await fetch(`${apiUrl}${city}&appid=${apiKey}`);
-    const data = await response.json();
+    try {
+      const response = await fetch(`${apiUrl}${city}&appid=${apiKey}`);
+      const data = await response.json();
 
-    if (data.cod !== 200) {
-      alert(data.message); // Show error if city not found
+      if (data.cod !== 200) {
+        alert(data.message);
+        setWeather(null);
+        setWeatherLoading(false);
+        return;
+      }
+
+      setWeather({
+        temperature: Math.round(data.main.temp),
+        humidity: data.main.humidity,
+        windSpeed: Math.round(data.wind.speed),
+        rainfall: data.rain ? data.rain['1h'] || 0 : 0,
+        forecast: [
+          { day: 'Mon', temp: Math.round(data.main.temp + 1), rain: 5 },
+          { day: 'Tue', temp: Math.round(data.main.temp + 2), rain: 0 },
+          { day: 'Wed', temp: Math.round(data.main.temp - 1), rain: 10 },
+          { day: 'Thu', temp: Math.round(data.main.temp + 3), rain: 2 },
+          { day: 'Fri', temp: Math.round(data.main.temp), rain: 0 },
+        ]
+      });
+    } catch (error) {
+      console.error(error);
+      alert("Failed to fetch weather data");
       setWeather(null);
+    } finally {
       setWeatherLoading(false);
-      return;
     }
+  };
 
-    // Map OpenWeatherMap data to your state
-    setWeather({
-      temperature: Math.round(data.main.temp),
-      humidity: data.main.humidity,
-      windSpeed: Math.round(data.wind.speed),
-      rainfall: data.rain ? data.rain['1h'] || 0 : 0,
-      forecast: [
-        // Simple placeholder forecast: you can later use the "forecast" API for real 5-day data
-        { day: 'Mon', temp: Math.round(data.main.temp + 1), rain: 5 },
-        { day: 'Tue', temp: Math.round(data.main.temp + 2), rain: 0 },
-        { day: 'Wed', temp: Math.round(data.main.temp - 1), rain: 10 },
-        { day: 'Thu', temp: Math.round(data.main.temp + 3), rain: 2 },
-        { day: 'Fri', temp: Math.round(data.main.temp), rain: 0 },
-      ]
-    });
-
-  } catch (error) {
-    console.error(error);
-    alert("Failed to fetch weather data");
-    setWeather(null);
-  } finally {
-    setWeatherLoading(false);
-  }
-};
-
-
-  // Handle chatbot messages (streaming via FastAPI RAG endpoint)
+  // Handle chatbot messages
   const sendChatMessage = async () => {
     if (!userInput.trim()) return;
 
-    // Capture the query and clear input immediately
     const query = userInput;
-    // Add user message to chat using functional update
     setMessages(prev => [...prev, { role: 'user', text: query }]);
     setUserInput('');
 
@@ -303,8 +599,7 @@ const AgriConnect = () => {
       });
 
       if (!response.ok) {
-        const errText = await response.text().catch(() => response.statusText);
-        throw new Error(`Server error: ${response.status} ${errText}`);
+        throw new Error(`Server error: ${response.status}`);
       }
 
       if (!response.body) {
@@ -315,7 +610,6 @@ const AgriConnect = () => {
       const decoder = new TextDecoder();
       let botText = '';
 
-      // Insert a placeholder bot message so UI shows a bot bubble immediately
       setMessages(prev => [...prev, { role: 'bot', text: '' }]);
 
       while (true) {
@@ -324,18 +618,14 @@ const AgriConnect = () => {
 
         botText += decoder.decode(value, { stream: true });
 
-        // Update the last bot message as it streams
         setMessages(prev => {
-          // Defensive copy
           const updated = [...prev];
-          // Find last bot message index
           let lastBotIdx = -1;
           for (let i = updated.length - 1; i >= 0; i--) {
             if (updated[i].role === 'bot') { lastBotIdx = i; break; }
           }
 
           if (lastBotIdx === -1) {
-            // If for some reason there is no bot message, push one
             updated.push({ role: 'bot', text: botText });
           } else {
             updated[lastBotIdx] = { ...updated[lastBotIdx], text: botText };
@@ -414,12 +704,11 @@ const AgriConnect = () => {
               {t.communityChatbot}
             </button>
             <button
-  onClick={() => setCurrentPage('forum')}
-  className={"bg-white text-green-600 px-8 py-4 rounded-xl font-semibold hover:bg-green-50 transition-all transform hover:scale-105 flex items-center gap-2"}
->
-  {language === 'hi' ? 'चर्चा मंच' : 'Forum'}
-</button>
-
+              onClick={() => setCurrentPage('forum')}
+              className="bg-white text-green-600 px-8 py-4 rounded-xl font-semibold hover:bg-green-50 transition-all transform hover:scale-105 flex items-center gap-2"
+            >
+              {language === 'hi' ? 'चर्चा मंच' : 'Forum'}
+            </button>
           </div>
         </div>
         <div className="absolute top-0 right-0 opacity-10">
@@ -599,7 +888,7 @@ const AgriConnect = () => {
         
         <button 
           type="submit"
-          className="mt-6 w-full bg-green-600  px-8 py-4 rounded-lg font-semibold hover:bg-green-700 transition-all transform hover:scale-105"
+          className="mt-6 w-full bg-green-600 text-black px-8 py-4 rounded-lg font-semibold hover:bg-green-700 transition-all transform hover:scale-105"
         >
           {t.submit}
         </button>
@@ -681,92 +970,6 @@ const AgriConnect = () => {
           </div>
         </div>
       )}
-    </div>
-  );
-
-  
-
-  const ChatPage = () => (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-4xl font-bold mb-8 flex items-center gap-3">
-        <MessageSquare className="text-purple-600" />
-        {t.communityChatbot}
-      </h1>
-      
-      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-2xl shadow-lg`}>
-        <div className="h-96 overflow-y-auto mb-4 space-y-4">
-          {messages.map((msg, idx) => (
-            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-xs md:max-w-md p-4 rounded-2xl ${
-                msg.role === 'user' 
-                  ? 'bg-green-600 text-white rounded-br-none' 
-                  : darkMode ? 'bg-gray-700 rounded-bl-none' : 'bg-gray-100 rounded-bl-none'
-              }`}>
-                <p>{msg.text}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <div className="flex gap-3">
-          <input 
-            type="text"
-            placeholder={t.typeMessage}
-            className={`flex-1 p-3 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600' : 'border-gray-300'}`}
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
-          />
-          <button 
-            onClick={sendChatMessage}
-            className="bg-green-600 text-black px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all"
-          >
-            {t.sendMessage}
-          </button>
-        </div>
-        
-        <div className={`mt-6 p-4 ${darkMode ? 'bg-blue-900' : 'bg-blue-50'} rounded-xl`}>
-          <p className="text-sm">
-            <strong>Sample Questions:</strong> "Which crop is best for black soil in Rabi season?" • 
-            "How to control pests in paddy?" • "Best fertilizer for wheat?"
-          </p>
-        </div>
-      </div>
-      
-      <div className="mt-8 grid md:grid-cols-2 gap-6">
-        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-2xl shadow-lg`}>
-          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Users className="text-green-600" />
-            Connect with Local Experts
-          </h3>
-          <div className="space-y-3">
-            <div className={`${darkMode ? 'bg-gray-700' : 'bg-green-50'} p-4 rounded-lg`}>
-              <p className="font-semibold">Dr. Amit Patel</p>
-              <p className="text-sm opacity-70">Soil Science Expert</p>
-              <p className="text-sm text-green-600">Available Now</p>
-            </div>
-            <div className={`${darkMode ? 'bg-gray-700' : 'bg-green-50'} p-4 rounded-lg`}>
-              <p className="font-semibold">Sunita Verma</p>
-              <p className="text-sm opacity-70">Crop Management Specialist</p>
-              <p className="text-sm text-green-600">Available Now</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-2xl shadow-lg`}>
-          <h3 className="text-xl font-bold mb-4">Agricultural Helplines</h3>
-          <div className="space-y-3">
-            <div className={`${darkMode ? 'bg-gray-700' : 'bg-blue-50'} p-4 rounded-lg`}>
-              <p className="font-semibold">Kisan Call Centre</p>
-              <p className="text-blue-600">1800-180-1551</p>
-            </div>
-            <div className={`${darkMode ? 'bg-gray-700' : 'bg-blue-50'} p-4 rounded-lg`}>
-              <p className="font-semibold">Agriculture Ministry Helpline</p>
-              <p className="text-blue-600">011-23382012</p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 
@@ -915,7 +1118,7 @@ const AgriConnect = () => {
               {/* Language Toggle */}
               <button 
                 onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-                className="px-4 py-2 bg-green-600 rounded-lg font-semibold hover:bg-green-700 transition-all"
+                className="px-4 py-2 bg-green-600 text-black rounded-lg font-semibold hover:bg-green-700 transition-all"
               >
                 {language === 'en' ? 'हिन्दी' : 'English'}
               </button>
@@ -981,17 +1184,26 @@ const AgriConnect = () => {
         {currentPage === 'home' && <HomePage />}
         {currentPage === 'predict' && <PredictPage />}
         {currentPage === 'weather' && (
-  <WeatherPage 
-    city={city} 
-    setCity={setCity} 
-    weather={weather} 
-    fetchWeather={fetchWeather} 
-    weatherLoading={weatherLoading} 
-    t={t} 
-    darkMode={darkMode} 
-  />
-)}
-        {currentPage === 'chat' && <ChatPage />}
+          <WeatherPage 
+            city={city} 
+            setCity={setCity} 
+            weather={weather} 
+            fetchWeather={fetchWeather} 
+            weatherLoading={weatherLoading} 
+            t={t} 
+            darkMode={darkMode} 
+          />
+        )}
+        {currentPage === 'chat' && (
+          <ChatPage 
+            messages={messages}
+            userInput={userInput}
+            setUserInput={setUserInput}
+            sendChatMessage={sendChatMessage}
+            t={t}
+            darkMode={darkMode}
+          />
+        )}
         {currentPage === 'forum' && <ForumPage />}
         {currentPage === 'dashboard' && <DashboardPage />}
       </main>
@@ -1031,189 +1243,5 @@ const AgriConnect = () => {
   );
 };
 
-const ForumPage = () => {
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      title: "Best fertilizers for Loamy Soil",
-      content: "What fertilizers work best for loamy soil to maximize yield?",
-      author: "Ravi Sharma",
-      time: "2 hours ago",
-      comments: [
-        { author: "Expert Anil", text: "Use NPK 10:26:26 or compost for better soil structure." },
-        { author: "Suman", text: "Organic manure also helps in loamy soil!" }
-      ],
-      showComments: false
-    },
-    {
-      id: 2,
-      title: "How to deal with pest attack in Kharif season?",
-      content: "Recently my crops are affected by pests, please suggest remedies.",
-      author: "Amit Kumar",
-      time: "5 hours ago",
-      comments: [
-        { author: "Expert Renu", text: "Spray neem-based organic pesticide every 7 days." }
-      ],
-      showComments: false
-    },
-    {
-      id: 3,
-      title: "Drip irrigation setup guide for beginners",
-      content: "I want to set up drip irrigation for 2 acres of land. Any guidance?",
-      author: "Priya Verma",
-      time: "1 day ago",
-      comments: [],
-      showComments: false
-    }
-  ]);
-
-  const [newPost, setNewPost] = useState({ title: '', content: '', author: '' });
-
-  const addPost = (e) => {
-    e.preventDefault();
-    if (!newPost.title || !newPost.content || !newPost.author) return;
-    const post = {
-      id: Date.now(),
-      ...newPost,
-      time: "Just now",
-      comments: [],
-      showComments: false
-    };
-    setPosts([post, ...posts]);
-    setNewPost({ title: '', content: '', author: '' });
-  };
-
-  const toggleComments = (id) => {
-    setPosts(posts.map(p => p.id === id ? { ...p, showComments: !p.showComments } : p));
-  };
-
-  const addComment = (postId, author, text) => {
-    if (!author || !text) return;
-    setPosts(posts.map(p =>
-      p.id === postId
-        ? { ...p, comments: [...p.comments, { author, text }] }
-        : p
-    ));
-  };
-
-  return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <h1 className="text-4xl font-bold mb-4 flex items-center gap-3 text-green-600">
-        <MessageSquare className="text-green-600" /> Discussion Forum
-      </h1>
-
-      {/* Create Post Section */}
-      <div className="bg-white p-6 rounded-2xl shadow-lg">
-        <h2 className="text-2xl font-semibold mb-4">Start a New Discussion</h2>
-        <form onSubmit={addPost} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Title"
-            value={newPost.title}
-            onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-            className="w-full p-3 border rounded-lg border-gray-300"
-          />
-          <textarea
-            placeholder="Write your discussion content..."
-            value={newPost.content}
-            onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-            className="w-full p-3 border rounded-lg border-gray-300"
-            rows="3"
-          ></textarea>
-          <input
-            type="text"
-            placeholder="Your Name"
-            value={newPost.author}
-            onChange={(e) => setNewPost({ ...newPost, author: e.target.value })}
-            className="w-full p-3 border rounded-lg border-gray-300"
-          />
-          <button
-            type="submit"
-            className="bg-green-600  px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all"
-          >
-            Post Discussion
-          </button>
-        </form>
-      </div>
-
-      {/* Posts List */}
-      <div className="space-y-6">
-        {posts.map(post => (
-          <div key={post.id} className="bg-white p-6 rounded-2xl shadow-lg">
-            <h3 className="text-2xl font-bold mb-2 text-green-700">{post.title}</h3>
-            <p className="text-gray-700 mb-3">{post.content}</p>
-            <p className="text-sm text-gray-500 mb-4">
-              Posted by <span className="font-semibold">{post.author}</span> • {post.time}
-            </p>
-
-            <button
-              onClick={() => toggleComments(post.id)}
-              className="text-green-600 font-medium mb-3"
-            >
-              {post.showComments
-                ? `Hide Comments (${post.comments.length})`
-                : `View Comments (${post.comments.length})`}
-            </button>
-
-            {post.showComments && (
-              <div className="mt-4 space-y-4">
-                {post.comments.map((c, i) => (
-                  <div key={i} className="bg-green-50 p-3 rounded-lg">
-                    <p className="text-sm">
-                      <span className="font-semibold">{c.author}:</span> {c.text}
-                    </p>
-                  </div>
-                ))}
-
-                {/* Add Comment */}
-                <AddCommentForm postId={post.id} addComment={addComment} />
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// ⬇️ Comment Form with “Post Comment” button
-const AddCommentForm = ({ postId, addComment }) => {
-  const [author, setAuthor] = useState('');
-  const [text, setText] = useState('');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    addComment(postId, author, text);
-    setAuthor('');
-    setText('');
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-3 mt-4 bg-green-50 p-4 rounded-xl border border-green-200">
-      <input
-        type="text"
-        placeholder="Your Name"
-        value={author}
-        onChange={(e) => setAuthor(e.target.value)}
-        className="w-full p-2 border rounded-lg border-gray-300"
-      />
-      <textarea
-        placeholder="Write a comment..."
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        className="w-full p-2 border rounded-lg border-gray-300"
-        rows="2"
-      ></textarea>
-      <button
-        type="submit"
-        className="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-700 transition-all font-semibold"
-      >
-        Post Comment
-      </button>
-    </form>
-  );
-};
-
-
-
 export default AgriConnect;
+

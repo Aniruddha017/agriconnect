@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from myapp.routes import rag, voice
+from myapp.routes import rag, voice, predict
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -23,3 +23,6 @@ app.include_router(rag.router, prefix="/api")
 
 #Voice route
 app.include_router(voice.router, prefix="/api")
+
+# Predict route
+app.include_router(predict.router, prefix="/api")
