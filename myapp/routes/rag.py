@@ -90,7 +90,7 @@ def rag_query_stream(request: QueryRequest):
 
     # Step 4: Build prompt
     prompt = (
-        f"Answer the following question based on the context:\n\n"
+        f"Answer the following question based on the context within 100 to 200 words\n\n"
         f"Context:\n{context}\n\n"
         f"Question:\n{query_text}"
     )
